@@ -6,6 +6,8 @@ export const ROOM_IDS: RoomId[] = ['D4', 'D6', 'D8', 'D10', 'D12', 'D20', 'D100'
 export type SessionType = '俱乐部团' | '活动团' | '商团';
 export type SessionStatus = '招募中' | '计划中' | '已满员' | '已取消' | '拼车中' | '已结团' | '卫星';
 
+export type UserRole = 'social' | 'student';
+
 export interface SessionData {
   id: string;
   recordId?: string; // Vika Record ID for cloud sync
@@ -13,7 +15,7 @@ export interface SessionData {
   ruleSystem: string;
   moduleName: string;
   gmName: string;
-  gmContact: string; 
+  gmContact: string;
   date: string; // YYYY-MM-DD or Free text for Satellite
   startTime: string; // HH:mm or Free text for Satellite
   weekday: string; // Calculated
@@ -23,6 +25,7 @@ export interface SessionData {
   tags: string[];
   notes: string;
   roomId: RoomId;
+  customLocation?: string; // For University mode
   sessionType: SessionType;
   status: SessionStatus;
   isExploded?: boolean;
@@ -44,6 +47,7 @@ export interface CloudConfig {
   apiToken: string;
   datasheetId: string; // Main schedule table
   satelliteDatasheetId?: string; // Optional separate table for satellites
+  universityDatasheetId?: string; // New table for university groups
   publicShareUrl?: string; // New field for the public read-only link
   enabled: boolean;
 }
@@ -65,4 +69,11 @@ export const INITIAL_SESSION: SessionData = {
   roomId: 'D20',
   sessionType: '俱乐部团',
   status: '招募中'
+};
+
+export const INITIAL_UNIVERSITY_SESSION: SessionData = {
+  ...INITIAL_SESSION,
+  roomId: '大厅', // Placeholder
+  customLocation: '四川大学望江校区XX教室',
+  sessionType: '活动团'
 };

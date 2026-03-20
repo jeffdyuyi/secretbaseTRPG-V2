@@ -8,9 +8,10 @@ interface SessionFormProps {
   onSave: (mode: 'create' | 'update') => void;
   isEditing: boolean;
   onCancelEdit: () => void;
+  isUniversityMode?: boolean;
 }
 
-export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave, isEditing, onCancelEdit }) => {
+export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave, isEditing, onCancelEdit, isUniversityMode }) => {
   const [gmProfiles, setGmProfiles] = useState<GMProfile[]>([]);
   const [templates, setTemplates] = useState<CardTemplate[]>([]);
   const [showLibrary, setShowLibrary] = useState(false);
@@ -254,10 +255,25 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
       </div>
 
       <div>
-        <label className="label-text mb-1">Room</label>
-        <select value={data.roomId} onChange={e => handleChange('roomId', e.target.value as RoomId)} className="input-field">
-          {ROOM_IDS.map(id => <option key={id} value={id}>{id === '大厅' ? id : `${id} 房间`}</option>)}
-        </select>
+        {isUniversityMode ? (
+          <>
+            <label className="label-text mb-1">地址 (自定义)</label>
+            <input
+              type="text"
+              value={data.customLocation || ''}
+              onChange={e => handleChange('customLocation', e.target.value)}
+              className="input-field"
+              placeholder="请输入详细地址，如：XX大学XX教学楼"
+            />
+          </>
+        ) : (
+          <>
+            <label className="label-text mb-1">Room</label>
+            <select value={data.roomId} onChange={e => handleChange('roomId', e.target.value as RoomId)} className="input-field">
+              {ROOM_IDS.map(id => <option key={id} value={id}>{id === '大厅' ? id : `${id} 房间`}</option>)}
+            </select>
+          </>
+        )}
       </div>
 
       <div className="space-y-3">

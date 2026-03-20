@@ -22,23 +22,26 @@ export const VikaService = {
     const response = await fetch(url, {
       headers: { 'Authorization': `Bearer ${apiToken}` }
     });
-    
+
     const json = await handleResponse(response);
     if (json.success) {
       return json.data.records.map((record: any) => {
         try {
-            const rawJson = record.fields['data'] || record.fields['元数据'];
-            if (!rawJson) return null;
-            const parsed = JSON.parse(rawJson);
-            // Attach Vika Record ID AND the Source Datasheet ID for logic handling
-            return { 
-                ...parsed, 
-                recordId: record.recordId,
-                _sourceDatasheetId: datasheetId 
-            };
+          const rawJson = record.fields['data'] || record.fields['元数据'];
+          if (!rawJson) return null;
+          const parsed = JSON.parse(rawJson);
+          // Support legacy records that might have customLocation in fields but not in data JSON
+          const customLocation = record.fields['地址'] || parsed.customLocation;
+          // Attach Vika Record ID AND the Source Datasheet ID for logic handling
+          return {
+            ...parsed,
+            customLocation,
+            recordId: record.recordId,
+            _sourceDatasheetId: datasheetId
+          };
         } catch (e) {
-            console.warn('Failed to parse record', record.recordId);
-            return null;
+          console.warn('Failed to parse record', record.recordId);
+          return null;
         }
       }).filter(Boolean);
     }
@@ -51,12 +54,12 @@ export const VikaService = {
     if (!datasheetId) throw new Error("No datasheet ID provided");
 
     const url = `${BASE_URL}/datasheets/${datasheetId}/records`;
-    
+
     // Prepare payload
     const recordValues = {
       "title": `${session.date} ${session.startTime} - ${session.moduleName}`,
       "data": JSON.stringify(session),
-      
+
       // Visual Columns
       "模组": session.moduleName || '',
       "规则": session.ruleSystem || '',
@@ -69,7 +72,8 @@ export const VikaService = {
       "人数进度": `${session.currentPlayers}/${session.maxPlayers}`,
       "标签": Array.isArray(session.tags) ? session.tags.join(', ') : '',
       "简介": session.description || '',
-      "联系方式": session.gmContact || ''
+      "联系方式": session.gmContact || '',
+      "地址": session.customLocation || ''
     };
 
     const response = await fetch(url, {
@@ -78,15 +82,15 @@ export const VikaService = {
         'Authorization': `Bearer ${config.apiToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         fieldKey: "name",
-        records: [{ fields: recordValues }] 
+        records: [{ fields: recordValues }]
       })
     });
 
     const json = await handleResponse(response);
     if (json.success && json.data.records.length > 0) {
-        return json.data.records[0].recordId;
+      return json.data.records[0].recordId;
     }
     throw new Error('Create failed');
   },
@@ -95,25 +99,26 @@ export const VikaService = {
   async updateSession(config: CloudConfig, session: SessionData, targetDatasheetId?: string): Promise<void> {
     if (!session.recordId) throw new Error('Missing Cloud ID');
     const datasheetId = targetDatasheetId || session._sourceDatasheetId || config.datasheetId;
-    
+
     const url = `${BASE_URL}/datasheets/${datasheetId}/records`;
-    
+
     const recordValues = {
-        "title": `${session.date} ${session.startTime} - ${session.moduleName}`,
-        "data": JSON.stringify(session),
-        
-        "模组": session.moduleName || '',
-        "规则": session.ruleSystem || '',
-        "GM": session.gmName || '',
-        "状态": session.status,
-        "类型": session.sessionType || '',
-        "房间": session.roomId || '',
-        "日期": session.date || '',
-        "时间": session.startTime || '',
-        "人数进度": `${session.currentPlayers}/${session.maxPlayers}`,
-        "标签": Array.isArray(session.tags) ? session.tags.join(', ') : '',
-        "简介": session.description || '',
-        "联系方式": session.gmContact || ''
+      "title": `${session.date} ${session.startTime} - ${session.moduleName}`,
+      "data": JSON.stringify(session),
+
+      "模组": session.moduleName || '',
+      "规则": session.ruleSystem || '',
+      "GM": session.gmName || '',
+      "状态": session.status,
+      "类型": session.sessionType || '',
+      "房间": session.roomId || '',
+      "日期": session.date || '',
+      "时间": session.startTime || '',
+      "人数进度": `${session.currentPlayers}/${session.maxPlayers}`,
+      "标签": Array.isArray(session.tags) ? session.tags.join(', ') : '',
+      "简介": session.description || '',
+      "联系方式": session.gmContact || '',
+      "地址": session.customLocation || ''
     };
 
     const response = await fetch(url, {
@@ -122,12 +127,12 @@ export const VikaService = {
         'Authorization': `Bearer ${config.apiToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         fieldKey: "name",
-        records: [{ recordId: session.recordId, fields: recordValues }] 
+        records: [{ recordId: session.recordId, fields: recordValues }]
       })
     });
-    
+
     await handleResponse(response);
   },
 
