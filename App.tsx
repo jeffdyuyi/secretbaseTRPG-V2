@@ -218,7 +218,7 @@ function App() {
             setIsSyncing(true);
             try {
                 // Determine Target Table
-                const isUniversity = activeTab === 'university';
+                const isUniversity = activeTab === 'university' || newSession.sessionType === '高校团';
                 let targetTableId = cloudConfig.datasheetId;
 
                 if (isUniversity) {

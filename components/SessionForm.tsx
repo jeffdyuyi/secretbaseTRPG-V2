@@ -159,13 +159,23 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
         <div>
           <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Session Type</label>
           <div className="flex gap-2">
-            {(['俱乐部团', '活动团', '商团'] as SessionType[]).map(type => (
-              <button key={type} onClick={() => handleChange('sessionType', type)}
-                className={`flex-1 py-1.5 rounded text-xs font-bold transition-all border shadow-sm ${data.sessionType === type ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'
-                  }`}>
-                {type}
-              </button>
-            ))}
+            {(['俱乐部团', '活动团', '商团', '高校团'] as SessionType[]).map(type => {
+              const isStudent = localStorage.getItem('trpg_user_role') === 'student';
+              if (type === '高校团' && !isUniversityMode && !isStudent) return null;
+
+              const isActive = data.sessionType === type;
+              const activeClass = type === '高校团'
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-emerald-100'
+                : 'bg-indigo-600 text-white border-indigo-600 shadow-indigo-100';
+
+              return (
+                <button key={type} onClick={() => handleChange('sessionType', type)}
+                  className={`flex-1 py-1.5 rounded text-xs font-bold transition-all border shadow-sm ${isActive ? activeClass : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'
+                    }`}>
+                  {type}
+                </button>
+              );
+            })}
           </div>
         </div>
         <div>
@@ -255,7 +265,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
       </div>
 
       <div>
-        {isUniversityMode ? (
+        {(isUniversityMode || data.sessionType === '高校团') ? (
           <>
             <label className="label-text mb-1">地址 (自定义)</label>
             <input
