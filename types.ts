@@ -1,0 +1,68 @@
+
+export type RoomId = 'D4' | 'D6' | 'D8' | 'D10' | 'D12' | 'D20' | 'D100' | '大厅';
+
+export const ROOM_IDS: RoomId[] = ['D4', 'D6', 'D8', 'D10', 'D12', 'D20', 'D100', '大厅'];
+
+export type SessionType = '俱乐部团' | '活动团' | '商团';
+export type SessionStatus = '招募中' | '计划中' | '已满员' | '已取消' | '拼车中' | '已结团' | '卫星';
+
+export interface SessionData {
+  id: string;
+  recordId?: string; // Vika Record ID for cloud sync
+  _sourceDatasheetId?: string; // Runtime tracking: which datasheet did this come from?
+  ruleSystem: string;
+  moduleName: string;
+  gmName: string;
+  gmContact: string; 
+  date: string; // YYYY-MM-DD or Free text for Satellite
+  startTime: string; // HH:mm or Free text for Satellite
+  weekday: string; // Calculated
+  currentPlayers: number;
+  maxPlayers: number;
+  description: string;
+  tags: string[];
+  notes: string;
+  roomId: RoomId;
+  sessionType: SessionType;
+  status: SessionStatus;
+  isExploded?: boolean;
+}
+
+export interface GMProfile {
+  id: string;
+  name: string;
+  contact: string;
+}
+
+export interface CardTemplate {
+  id: string;
+  name: string; // User defined name for the template
+  data: SessionData;
+}
+
+export interface CloudConfig {
+  apiToken: string;
+  datasheetId: string; // Main schedule table
+  satelliteDatasheetId?: string; // Optional separate table for satellites
+  publicShareUrl?: string; // New field for the public read-only link
+  enabled: boolean;
+}
+
+export const INITIAL_SESSION: SessionData = {
+  id: '',
+  ruleSystem: 'D&D 5E',
+  moduleName: '矿坑的失落回声',
+  gmName: '',
+  gmContact: '',
+  date: new Date().toISOString().split('T')[0],
+  startTime: '19:30',
+  weekday: '',
+  currentPlayers: 1,
+  maxPlayers: 4,
+  description: '在一个被遗忘的矿坑深处，回声不仅仅是声音的反射...',
+  tags: ['新手友好', '重解谜', '微恐怖'],
+  notes: '请自备人物卡，可以使用扩展内容。',
+  roomId: 'D20',
+  sessionType: '俱乐部团',
+  status: '招募中'
+};
