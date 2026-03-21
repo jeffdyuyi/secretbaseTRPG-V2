@@ -110,6 +110,27 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
     }
   };
 
+  const handleFormat = (field: 'description' | 'notes', prefix: string, suffix: string) => {
+    const el = document.getElementById(`${field}-textarea`) as HTMLTextAreaElement;
+    if (el) {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const text = data[field];
+      const selectedText = text.substring(start, end) || (field === 'description' ? '描述文字' : '备注文字');
+      const newText = text.substring(0, start) + prefix + selectedText + suffix + text.substring(end);
+      handleChange(field, newText);
+
+      // Delay focus and selection sync
+      setTimeout(() => {
+        el.focus();
+        el.setSelectionRange(start + prefix.length, start + prefix.length + selectedText.length);
+      }, 0);
+    } else {
+      // Fallback if no selection
+      handleChange(field, data[field] + prefix + (field === 'description' ? '描述文字' : '备注文字') + suffix);
+    }
+  };
+
   const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       const val = e.currentTarget.value.trim();
@@ -287,8 +308,26 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
       </div>
 
       <div className="space-y-3">
-        <div><label className="label-text mb-1">Description</label><textarea rows={3} value={data.description} onChange={e => handleChange('description', e.target.value)} className="input-field text-xs leading-relaxed" /></div>
-        <div><label className="label-text mb-1">Notes</label><textarea rows={2} value={data.notes} onChange={e => handleChange('notes', e.target.value)} className="input-field text-xs leading-relaxed" /></div>
+        <div>
+          <div className="flex justify-between items-end mb-1">
+            <label className="label-text mb-0">Description</label>
+            <div className="flex gap-1">
+              <button title="加粗 (Ctrl+B)" onClick={(e) => { e.preventDefault(); handleFormat('description', '**', '**'); }} className="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded transition-colors border border-slate-200">B</button>
+              <button title="斜体 (Ctrl+I)" onClick={(e) => { e.preventDefault(); handleFormat('description', '*', '*'); }} className="text-[10px] italic font-serif bg-slate-100 hover:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded transition-colors border border-slate-200">I</button>
+            </div>
+          </div>
+          <textarea id="description-textarea" rows={3} value={data.description} onChange={e => handleChange('description', e.target.value)} className="input-field text-xs leading-relaxed" />
+        </div>
+        <div>
+          <div className="flex justify-between items-end mb-1">
+            <label className="label-text mb-0">Notes</label>
+            <div className="flex gap-1">
+              <button title="加粗 (Ctrl+B)" onClick={(e) => { e.preventDefault(); handleFormat('notes', '**', '**'); }} className="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded transition-colors border border-slate-200">B</button>
+              <button title="斜体 (Ctrl+I)" onClick={(e) => { e.preventDefault(); handleFormat('notes', '*', '*'); }} className="text-[10px] italic font-serif bg-slate-100 hover:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded transition-colors border border-slate-200">I</button>
+            </div>
+          </div>
+          <textarea id="notes-textarea" rows={2} value={data.notes} onChange={e => handleChange('notes', e.target.value)} className="input-field text-xs leading-relaxed" />
+        </div>
       </div>
 
       <div>

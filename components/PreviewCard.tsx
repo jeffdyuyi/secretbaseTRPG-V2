@@ -3,6 +3,7 @@ import { SessionData } from '../types';
 import { Calendar, Clock, User, Users, MapPin, Info, MessageCircle } from 'lucide-react';
 import { format, parseISO, isValid } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import { renderRichText } from '../utils/textFormat';
 
 interface PreviewCardProps {
     data: SessionData;
@@ -58,8 +59,8 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                 {/* Header Section */}
                 <div className="bg-slate-900 p-6 pb-8 relative text-white">
                     <div className="flex justify-between items-start mb-4">
-                        <div>
-                            <h2 className="text-xs font-bold tracking-[0.2em] text-slate-400 uppercase mb-1">TRPG Session Card</h2>
+                        <div className="flex-1 mr-4">
+                            <h2 className="text-xs font-bold text-indigo-300 uppercase mb-1 break-words line-clamp-2">{data.ruleSystem}</h2>
                             <h1 className="text-lg font-black tracking-wider text-white">成都秘密基地</h1>
                         </div>
                         <div className="flex flex-col items-end gap-2">
@@ -76,9 +77,6 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
 
                     {/* Title */}
                     <div className="relative z-10">
-                        <div className="inline-block px-2 py-0.5 bg-white/10 backdrop-blur-sm rounded text-[10px] font-bold text-indigo-300 mb-2 border border-white/10">
-                            {data.ruleSystem}
-                        </div>
                         <h1 className="text-3xl font-black leading-tight text-white drop-shadow-sm">{data.moduleName}</h1>
                     </div>
 
@@ -154,7 +152,7 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                             <span className="text-xs font-bold text-indigo-900 uppercase tracking-wide">Story & Details</span>
                         </div>
                         <p className="text-xs leading-relaxed text-slate-600 text-justify whitespace-pre-wrap font-medium">
-                            {data.description}
+                            {renderRichText(data.description)}
                         </p>
                     </div>
 
@@ -163,15 +161,15 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                         <div className="mb-5 relative pl-3">
                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400 rounded-full"></div>
                             <h4 className="text-[10px] font-bold text-amber-600 uppercase mb-0.5">注意事项 Note</h4>
-                            <p className="text-[10px] text-slate-500 leading-normal">{data.notes}</p>
+                            <p className="text-[10px] text-slate-500 leading-normal whitespace-pre-wrap">{renderRichText(data.notes)}</p>
                         </div>
                     )}
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2">
                         {data.tags.map((tag, i) => (
-                            <span key={i} className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md border border-slate-200">
-                                #{tag}
+                            <span key={i} className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md border border-slate-200 whitespace-nowrap break-keep">
+                                {tag}
                             </span>
                         ))}
                     </div>
