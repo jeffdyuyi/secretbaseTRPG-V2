@@ -3,8 +3,10 @@ import { SessionData, ROOM_IDS, RoomId } from '../types';
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameWeek, endOfWeek } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { toPng } from 'html-to-image';
-import { Copy, Check, Image as ImageIcon, Bomb, Pencil, FileJson, ChevronDown, ChevronUp, Users, ArrowRightLeft, History, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { Copy, Check, Image as ImageIcon, Bomb, Pencil, FileJson, ChevronDown, ChevronUp, Users, ArrowRightLeft, History, ChevronLeft, ChevronRight, Calendar, UserPlus, LogOut } from 'lucide-react';
 import { DataPanel } from './DataPanel';
+import { useAuth } from '../contexts/AuthContext';
+import { EnrollmentModal } from './EnrollmentModal';
 
 interface ScheduleGridProps {
     sessions: SessionData[];
@@ -13,11 +15,13 @@ interface ScheduleGridProps {
     onEdit: (id: string) => void;
     onImport: (data: SessionData[]) => void;
     onCopyLastWeek: () => void;
+    onEnroll?: (sessionId: string, action: 'enroll' | 'cancel') => void;
 }
 
 type ViewMode = 'date-rows' | 'room-rows';
 
-export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites, onExplode, onEdit, onImport, onCopyLastWeek }) => {
+export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites, onExplode, onEdit, onImport, onCopyLastWeek, onEnroll }) => {
+    const { user } = useAuth();
     const scheduleRef = useRef<HTMLDivElement>(null);
     const [copied, setCopied] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -27,6 +31,9 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites
 
     // Data Management UI State
     const [showDataPanel, setShowDataPanel] = useState(false);
+
+    // Enrollment UI State
+    const [enrollingSession, setEnrollingSession] = useState<SessionData | null>(null);
 
     // Current week calculation based on viewDate
     const startOfSelectedWeek = startOfWeek(viewDate, { weekStartsOn: 1 });
@@ -147,9 +154,9 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites
                         {session.startTime}
                     </span>
                     <span className={`w-2 h-2 rounded-full ${session.status === '招募中' ? 'bg-green-500' :
-                            session.status === '已满员' ? 'bg-red-500' :
-                                session.status === '拼车中' ? 'bg-orange-500' :
-                                    session.status === '已结团' ? 'bg-gray-800' : 'bg-blue-500'
+                        session.status === '已满员' ? 'bg-red-500' :
+                            session.status === '拼车中' ? 'bg-orange-500' :
+                                session.status === '已结团' ? 'bg-gray-800' : 'bg-blue-500'
                         }`} />
                 </div>
                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${getTypeColor(session.sessionType)}`}>
@@ -185,6 +192,34 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites
                     <span className="text-slate-400">{session.maxPlayers}</span>
                 </div>
             </div>
+
+            {/* Enrollment Action (Visible on hover or when recruiting) */}
+            {session.status === '招募中' && !session.isExploded && (
+                <div className="mt-2 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {user ? (
+                        session.enrolledUsers?.some(u => u.userId === user.id) ? (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setEnrollingSession(session); }}
+                                className="w-full bg-red-50 text-red-600 border border-red-200 py-1 rounded-md text-[10px] font-bold hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
+                            >
+                                <LogOut size={12} /> 已报名 (点击取消)
+                            </button>
+                        ) : (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setEnrollingSession(session); }}
+                                disabled={session.currentPlayers >= session.maxPlayers}
+                                className="w-full bg-indigo-50 text-indigo-700 border border-indigo-200 py-1 rounded-md text-[10px] font-bold hover:bg-indigo-100 transition-colors flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <UserPlus size={12} /> {session.currentPlayers >= session.maxPlayers ? '已满员' : '我要报名'}
+                            </button>
+                        )
+                    ) : (
+                        <div className="w-full bg-slate-50 text-slate-500 border border-slate-200 py-1 rounded-md text-[10px] font-bold">
+                            请先登录以报名
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 
@@ -352,6 +387,22 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites
                     </div>
                 </div>
             </div>
+
+            {/* Enrollment Modal */}
+            {enrollingSession && user && onEnroll && (
+                <EnrollmentModal
+                    session={enrollingSession}
+                    user={user}
+                    isEnrolled={!!enrollingSession.enrolledUsers?.some(u => u.userId === user.id)}
+                    onConfirm={() => {
+                        const isEnrolled = !!enrollingSession.enrolledUsers?.some(u => u.userId === user.id);
+                        onEnroll(enrollingSession.id, isEnrolled ? 'cancel' : 'enroll');
+                        setEnrollingSession(null);
+                        setSelectedId(null);
+                    }}
+                    onCancel={() => setEnrollingSession(null)}
+                />
+            )}
         </div>
     );
 };

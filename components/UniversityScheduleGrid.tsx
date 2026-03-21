@@ -3,23 +3,28 @@ import { SessionData } from '../types';
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameWeek, endOfWeek } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { toPng } from 'html-to-image';
-import { Copy, Check, Image as ImageIcon, Bomb, Pencil, FileJson, ChevronDown, ChevronUp, Users, ChevronLeft, ChevronRight, Calendar, MapPin } from 'lucide-react';
+import { Copy, Check, Image as ImageIcon, Bomb, Pencil, FileJson, ChevronDown, ChevronUp, Users, ChevronLeft, ChevronRight, Calendar, MapPin, UserPlus, LogOut } from 'lucide-react';
 import { DataPanel } from './DataPanel';
+import { useAuth } from '../contexts/AuthContext';
+import { EnrollmentModal } from './EnrollmentModal';
 
 interface UniversityScheduleGridProps {
     sessions: SessionData[];
     onExplode: (id: string) => void;
     onEdit: (id: string) => void;
-    onImport: (data: SessionData[]) => void;
+    onImport?: (data: SessionData[]) => void;
+    onEnroll?: (sessionId: string, action: 'enroll' | 'cancel') => void;
 }
 
-export const UniversityScheduleGrid: React.FC<UniversityScheduleGridProps> = ({ sessions, onExplode, onEdit, onImport }) => {
+export const UniversityScheduleGrid: React.FC<UniversityScheduleGridProps> = ({ sessions, onExplode, onEdit, onImport, onEnroll }) => {
+    const { user } = useAuth();
     const scheduleRef = useRef<HTMLDivElement>(null);
     const [copied, setCopied] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [viewDate, setViewDate] = useState(new Date());
     const [showDataPanel, setShowDataPanel] = useState(false);
+    const [enrollingSession, setEnrollingSession] = useState<SessionData | null>(null);
 
     const startOfSelectedWeek = startOfWeek(viewDate, { weekStartsOn: 1 });
     const endOfSelectedWeek = endOfWeek(viewDate, { weekStartsOn: 1 });
@@ -156,6 +161,34 @@ export const UniversityScheduleGrid: React.FC<UniversityScheduleGridProps> = ({ 
                     <span className="font-bold text-slate-800">{session.currentPlayers}/{session.maxPlayers}</span>
                 </div>
             </div>
+
+            {/* Enrollment Action */}
+            {session.status === '招募中' && !session.isExploded && (
+                <div className="mt-3 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {user ? (
+                        session.enrolledUsers?.some(u => u.userId === user.id) ? (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setEnrollingSession(session); }}
+                                className="w-full bg-red-50 text-red-600 border border-red-200 py-1.5 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
+                            >
+                                <LogOut size={14} /> 已报名 (取消报名)
+                            </button>
+                        ) : (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setEnrollingSession(session); }}
+                                disabled={session.currentPlayers >= session.maxPlayers}
+                                className="w-full bg-emerald-50 text-emerald-700 border border-emerald-200 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <UserPlus size={14} /> {session.currentPlayers >= session.maxPlayers ? '已满员' : '我要报名'}
+                            </button>
+                        )
+                    ) : (
+                        <div className="w-full bg-slate-50 text-slate-500 border border-slate-200 py-1.5 rounded-lg text-xs font-bold text-center">
+                            请先登录以报名
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 
@@ -257,6 +290,22 @@ export const UniversityScheduleGrid: React.FC<UniversityScheduleGridProps> = ({ 
                     </div>
                 </div>
             </div>
+
+            {/* Enrollment Modal */}
+            {enrollingSession && user && onEnroll && (
+                <EnrollmentModal
+                    session={enrollingSession}
+                    user={user}
+                    isEnrolled={!!enrollingSession.enrolledUsers?.some(u => u.userId === user.id)}
+                    onConfirm={() => {
+                        const isEnrolled = !!enrollingSession.enrolledUsers?.some(u => u.userId === user.id);
+                        onEnroll(enrollingSession.id, isEnrolled ? 'cancel' : 'enroll');
+                        setEnrollingSession(null);
+                        setSelectedId(null);
+                    }}
+                    onCancel={() => setEnrollingSession(null)}
+                />
+            )}
         </div>
     );
 };

@@ -7,11 +7,13 @@ import { ScheduleGrid } from './components/ScheduleGrid';
 import { UniversityScheduleGrid } from './components/UniversityScheduleGrid';
 import { SatelliteGrid } from './components/SatelliteGrid';
 import { VikaService } from './utils/vika';
+import { useAuth } from './contexts/AuthContext';
 import { toBlob } from 'html-to-image';
 import { FileText, Download, Calendar as CalendarIcon, Dice5, Copy, Check, AlertTriangle, Rocket, Cloud, RefreshCw, Settings, Share2, Upload, Database, Plus } from 'lucide-react';
 import { startOfWeek, format, subDays, addDays, parseISO } from 'date-fns';
 
 function App() {
+    const { user, login, logout } = useAuth();
     const [activeTab, setActiveTab] = useState<'generator' | 'schedule' | 'university' | 'satellite' | 'settings'>('generator');
     const [formData, setFormData] = useState<SessionData>(INITIAL_SESSION);
 
@@ -301,6 +303,56 @@ function App() {
         setEditingId(null);
     };
 
+    // --- MOCK ENROLLMENT LOGIC ---
+    const handleEnrollSession = async (sessionId: string, action: 'enroll' | 'cancel') => {
+        if (!user) {
+            alert('请先登录！');
+            return;
+        }
+
+        const updateDataStore = (
+            dataStore: SessionData[],
+            setDataStore: React.Dispatch<React.SetStateAction<SessionData[]>>
+        ) => {
+            let found = false;
+            const newData = dataStore.map(s => {
+                if (s.id === sessionId) {
+                    found = true;
+                    const enrolledUsers = s.enrolledUsers || [];
+                    if (action === 'enroll') {
+                        if (enrolledUsers.some(u => u.userId === user.id)) return s; // Already enrolled
+                        if (s.currentPlayers >= s.maxPlayers) {
+                            alert('人数已满！');
+                            return s;
+                        }
+                        return {
+                            ...s,
+                            currentPlayers: s.currentPlayers + 1,
+                            enrolledUsers: [...enrolledUsers, { userId: user.id, username: user.username, contact: user.contact }]
+                        };
+                    } else {
+                        return {
+                            ...s,
+                            currentPlayers: Math.max(0, s.currentPlayers - 1),
+                            enrolledUsers: enrolledUsers.filter(u => u.userId !== user.id)
+                        };
+                    }
+                }
+                return s;
+            });
+            if (found) setDataStore(newData);
+            return found;
+        };
+
+        const foundInSessions = updateDataStore(sessions, setSessions);
+        if (!foundInSessions) {
+            updateDataStore(universitySessions, setUniversitySessions);
+        }
+
+        // Note: In a real system, we'd also sync this back to Vika/Backend here via an API call.
+        // For testing, local state update is sufficient.
+    };
+
     const handleExplodeSession = async (id: string) => {
         if (cloudConfig.enabled) {
             const target = [...sessions, ...satellites].find(s => s.id === id);
@@ -491,7 +543,26 @@ function App() {
                         </div>
 
                         {/* Status Indicator & Share */}
-                        <div className="flex-1 flex justify-end px-4 gap-2">
+                        <div className="flex-1 flex justify-end px-4 gap-2 items-center">
+                            {user ? (
+                                <div className="flex items-center gap-3 bg-white px-3 py-1 rounded-full border border-slate-200">
+                                    <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs">
+                                        {user.username.charAt(0)}
+                                    </div>
+                                    <span className="text-sm font-medium text-slate-700">{user.username}</span>
+                                    <div className="w-px h-4 bg-slate-200"></div>
+                                    <button onClick={logout} className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors">退出</button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => login({ id: 'u_12345', username: '模拟玩家', contact: 'QQ: 88888', sysRole: 'player' })}
+                                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full transition-colors border border-indigo-100"
+                                    title="模拟用户登录以测试报名功能"
+                                >
+                                    模拟登录
+                                </button>
+                            )}
+
                             {cloudConfig.enabled && (
                                 <>
                                     <div className="flex items-center gap-2 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
@@ -775,6 +846,7 @@ function App() {
                             onEdit={handleEditSession}
                             onImport={handleImportSchedule}
                             onCopyLastWeek={handleCopyFromLastWeek}
+                            onEnroll={handleEnrollSession}
                         />
                     </div>
                 )}
@@ -798,11 +870,8 @@ function App() {
                                 <button onClick={refreshCloudData} className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600" title="刷新数据">
                                     <RefreshCw size={18} className={isSyncing ? "animate-spin" : ""} />
                                 </button>
-                                <button onClick={() => {
-                                    setFormData(INITIAL_UNIVERSITY_SESSION);
-                                    setActiveTab('generator');
-                                }} className="flex items-center gap-1 text-sm bg-emerald-600 text-white px-4 py-2 rounded-full font-bold hover:bg-emerald-700 transition-all shadow-lg hover:shadow-emerald-200">
-                                    <Plus size={14} /> 我要发团
+                                <button onClick={() => { setActiveTab('generator'); setFormData({ ...INITIAL_UNIVERSITY_SESSION, date: formData.date }); }} className="flex items-center gap-1 text-sm bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full font-medium hover:bg-emerald-100 transition-colors">
+                                    <Plus size={14} /> 发布高校团
                                 </button>
                             </div>
                         </div>
@@ -810,6 +879,7 @@ function App() {
                             sessions={universitySessions}
                             onExplode={handleExplodeSession}
                             onEdit={handleEditSession}
+                            onEnroll={handleEnrollSession}
                             onImport={handleImportSchedule}
                         />
                     </div>

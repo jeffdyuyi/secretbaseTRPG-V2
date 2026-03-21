@@ -8,6 +8,19 @@ export type SessionStatus = '招募中' | '计划中' | '已满员' | '已取消
 
 export type UserRole = 'social' | 'student';
 
+export interface User {
+  id: string;
+  username: string;
+  contact: string;
+  sysRole: 'player' | 'admin'; // For the backend system role
+}
+
+export interface EnrolledUser {
+  userId: string;
+  username: string;
+  contact: string;
+}
+
 export interface SessionData {
   id: string;
   recordId?: string; // Vika Record ID for cloud sync
@@ -31,6 +44,7 @@ export interface SessionData {
   isExploded?: boolean;
   moduleFontSize?: number; // UI font size for module name
   ruleFontSize?: number; // UI font size for rule system
+  enrolledUsers?: EnrolledUser[]; // Array of users enrolled in this session
 }
 
 export interface GMProfile {
