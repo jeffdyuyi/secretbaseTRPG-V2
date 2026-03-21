@@ -60,15 +60,14 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                 <div className="bg-slate-900 p-6 pb-8 relative text-white">
                     <div className="flex justify-between items-start mb-4">
                         <div className="flex-1 mr-4">
-                            <h2 className="text-xs font-bold text-indigo-300 uppercase mb-1 break-words line-clamp-2">{data.ruleSystem}</h2>
-                            <h1 className="text-lg font-black tracking-wider text-white">成都秘密基地</h1>
+                            <h1 className="text-lg font-black tracking-widest text-white">成都秘密基地</h1>
                         </div>
                         <div className="flex flex-col items-end gap-2">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${badgeColors[data.sessionType] || 'bg-slate-700 text-white'}`}>
                                 {data.sessionType}
                             </span>
                             <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] text-slate-400">STATUS</span>
+                                <span className="text-[10px] text-slate-400">状态</span>
                                 <span className={`h-2 w-2 rounded-full ${statusColors[data.status] || 'bg-slate-500'}`}></span>
                                 <span className="text-xs font-bold">{data.status}</span>
                             </div>
@@ -76,8 +75,19 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                     </div>
 
                     {/* Title */}
-                    <div className="relative z-10">
-                        <h1 className="text-3xl font-black leading-tight text-white drop-shadow-sm">{data.moduleName}</h1>
+                    <div className="relative z-10 flex flex-col items-start gap-2">
+                        <h1
+                            className="font-black leading-tight text-white drop-shadow-sm"
+                            style={{ fontSize: `${data.moduleFontSize || 30}px`, lineHeight: 1.2 }}
+                        >
+                            {data.moduleName}
+                        </h1>
+                        <div
+                            className="inline-block px-2 py-0.5 bg-white/10 backdrop-blur-sm rounded font-bold text-indigo-200 border border-white/10"
+                            style={{ fontSize: `${data.ruleFontSize || 14}px` }}
+                        >
+                            {data.ruleSystem}
+                        </div>
                     </div>
 
                     {/* Decorative background pattern */}
@@ -87,7 +97,7 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                 {/* Middle Info Bar (Date/Time/Room) */}
                 <div className="bg-slate-50 border-b border-slate-100 px-6 py-4 grid grid-cols-3 gap-4">
                     <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">DATE</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">日期</span>
                         <div className="flex items-center gap-1.5 text-slate-800 font-bold">
                             <Calendar size={14} className="text-indigo-500" />
                             <span className={data.status === '卫星' ? 'text-sm' : ''}>{formattedDate}</span>
@@ -95,14 +105,14 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                         {weekdayStr && <span className="text-[10px] text-slate-400 font-medium pl-5">{weekdayStr}</span>}
                     </div>
                     <div className="flex flex-col border-l border-slate-200 pl-4">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">TIME</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">时间</span>
                         <div className="flex items-center gap-1.5 text-slate-800 font-bold">
                             <Clock size={14} className="text-indigo-500" />
                             <span className="font-mono">{data.startTime}</span>
                         </div>
                     </div>
                     <div className="flex flex-col border-l border-slate-200 pl-4">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">ROOM</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">地点</span>
                         <div className="flex items-center gap-1.5 text-slate-800 font-bold">
                             <MapPin size={14} className="text-indigo-500" />
                             <span>{data.roomId}</span>
@@ -122,7 +132,7 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                     {/* Personnel */}
                     <div className="flex justify-between items-start mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
                         <div className="flex flex-col gap-1">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">GAME MASTER</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">游戏主持</span>
                             <div className="flex items-center gap-2">
                                 <User size={16} className="text-slate-700" />
                                 <span className="font-bold text-slate-900">{data.gmName}</span>
@@ -135,7 +145,7 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                             )}
                         </div>
                         <div className="flex flex-col items-end gap-1">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PLAYERS</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">玩家人数</span>
                             <div className="flex items-center gap-2">
                                 <span className="text-lg font-black text-slate-900">{data.currentPlayers}</span>
                                 <span className="text-sm text-slate-400 font-bold">/</span>
@@ -149,7 +159,7 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                     <div className="mb-5">
                         <div className="flex items-center gap-2 mb-2">
                             <Info size={14} className="text-indigo-500" />
-                            <span className="text-xs font-bold text-indigo-900 uppercase tracking-wide">Story & Details</span>
+                            <span className="text-xs font-bold text-indigo-900 uppercase tracking-wide">团务详情</span>
                         </div>
                         <p className="text-xs leading-relaxed text-slate-600 text-justify whitespace-pre-wrap font-medium">
                             {renderRichText(data.description)}
@@ -178,7 +188,7 @@ export const PreviewCard = forwardRef<HTMLDivElement, PreviewCardProps>(({ data 
                 {/* Footer */}
                 <div className="bg-slate-50 px-6 py-3 border-t border-slate-100 flex justify-between items-center">
                     <div className="flex flex-col">
-                        <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">DESIGNED BY 不咕鸟</span>
+                        <span className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">卡牌设计 不咕鸟</span>
                         <span className="text-[8px] text-slate-400 font-mono">QQ: 442348584</span>
                     </div>
                     <div className="flex gap-1">

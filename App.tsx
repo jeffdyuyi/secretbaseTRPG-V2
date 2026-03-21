@@ -790,6 +790,8 @@ function App() {
                                 </div>
                                 <p className="text-slate-500 text-sm mt-1">
                                     本页面由各大高校跑团社团维护，所有团务均在校内或周边进行。
+                                    <br className="my-1" />
+                                    <span className="inline-block mt-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-100 font-medium">免责声明：本页面系成都秘密基地TRPG俱乐部为支持各大高校TRPG社群而无偿提供的公共信息发布平台。俱乐部不对本平台中由任何主持人、参与者及活动场地之间产生的任何经济纠纷或意外损失承担法律责任。请各位玩家自行甄别活动信息，注意人身及财产安全。</span>
                                 </p>
                             </div>
                             <div className="flex gap-2">

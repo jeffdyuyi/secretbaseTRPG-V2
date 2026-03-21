@@ -29,6 +29,8 @@ export interface SessionData {
   sessionType: SessionType;
   status: SessionStatus;
   isExploded?: boolean;
+  moduleFontSize?: number; // UI font size for module name
+  ruleFontSize?: number; // UI font size for rule system
 }
 
 export interface GMProfile {
@@ -68,7 +70,9 @@ export const INITIAL_SESSION: SessionData = {
   notes: '请自备人物卡，可以使用扩展内容。',
   roomId: 'D20',
   sessionType: '俱乐部团',
-  status: '招募中'
+  status: '招募中',
+  moduleFontSize: 30,
+  ruleFontSize: 14
 };
 
 export const INITIAL_UNIVERSITY_SESSION: SessionData = {

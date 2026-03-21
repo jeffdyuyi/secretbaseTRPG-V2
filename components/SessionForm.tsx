@@ -178,7 +178,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
       {/* Type & Status */}
       <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 space-y-3">
         <div>
-          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Session Type</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">团务类型</label>
           <div className="flex gap-2">
             {(['俱乐部团', '活动团', '商团', '高校团'] as SessionType[]).map(type => {
               const isStudent = localStorage.getItem('trpg_user_role') === 'student';
@@ -200,7 +200,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
           </div>
         </div>
         <div>
-          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Status</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">开团状态</label>
           <div className="flex flex-wrap gap-2">
             {(['招募中', '计划中', '已满员', '已取消', '已结团', '拼车中', '卫星'] as SessionStatus[]).map(status => {
               if (status === '拼车中' && data.sessionType !== '商团') return null;
@@ -219,11 +219,23 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="label-text">Rule System</label>
+          <div className="flex justify-between items-center mb-1">
+            <label className="label-text mb-0">规则系统</label>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-slate-400 font-medium">字号 {data.ruleFontSize || 14}</span>
+              <input type="range" min="10" max="24" value={data.ruleFontSize || 14} onChange={e => handleChange('ruleFontSize', Number(e.target.value))} className="w-16 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+            </div>
+          </div>
           <input type="text" value={data.ruleSystem} onChange={e => handleChange('ruleSystem', e.target.value)} className="input-field" placeholder="D&D 5E" />
         </div>
         <div>
-          <label className="label-text">Module Name</label>
+          <div className="flex justify-between items-center mb-1">
+            <label className="label-text mb-0">模组名称</label>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-slate-400 font-medium">字号 {data.moduleFontSize || 30}</span>
+              <input type="range" min="16" max="60" value={data.moduleFontSize || 30} onChange={e => handleChange('moduleFontSize', Number(e.target.value))} className="w-16 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
+            </div>
+          </div>
           <input type="text" value={data.moduleName} onChange={e => handleChange('moduleName', e.target.value)} className="input-field font-bold" />
         </div>
       </div>
@@ -231,7 +243,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
       {/* GM Info */}
       <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
         <div className="flex justify-between items-center mb-2">
-          <label className="label-text">GM Identity</label>
+          <label className="label-text">主持人信息</label>
           <div className="relative">
             <select onChange={handleSelectGm} className="text-[10px] p-1 pr-6 bg-white border border-slate-200 rounded appearance-none focus:outline-none" defaultValue="">
               <option value="" disabled>选择存好的身份...</option>
@@ -260,7 +272,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="label-text">Date</label>
+              <label className="label-text">开团日期</label>
               {isSatellite ? (
                 <input type="text" value={data.date} onChange={e => handleChange('date', e.target.value)} className="input-field" placeholder="日期说明" />
               ) : (
@@ -268,7 +280,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
               )}
             </div>
             <div>
-              <label className="label-text">Time</label>
+              <label className="label-text">具体时间</label>
               {isSatellite ? (
                 <input type="text" value={data.startTime} onChange={e => handleChange('startTime', e.target.value)} className="input-field" placeholder="时间说明" />
               ) : (
@@ -279,8 +291,8 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
         </div>
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
-            <div><label className="label-text">Current</label><input type="number" min="0" value={data.currentPlayers} onChange={e => handleChange('currentPlayers', parseInt(e.target.value))} className="input-field" /></div>
-            <div><label className="label-text">Max</label><input type="number" min="1" value={data.maxPlayers} onChange={e => handleChange('maxPlayers', parseInt(e.target.value))} className="input-field" /></div>
+            <div><label className="label-text">当前人数</label><input type="number" min="0" value={data.currentPlayers} onChange={e => handleChange('currentPlayers', parseInt(e.target.value))} className="input-field" /></div>
+            <div><label className="label-text">最大人数</label><input type="number" min="1" value={data.maxPlayers} onChange={e => handleChange('maxPlayers', parseInt(e.target.value))} className="input-field" /></div>
           </div>
         </div>
       </div>
@@ -299,7 +311,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
           </>
         ) : (
           <>
-            <label className="label-text mb-1">Room</label>
+            <label className="label-text mb-1">房间 / 地点</label>
             <select value={data.roomId} onChange={e => handleChange('roomId', e.target.value as RoomId)} className="input-field">
               {ROOM_IDS.map(id => <option key={id} value={id}>{id === '大厅' ? id : `${id} 房间`}</option>)}
             </select>
@@ -310,7 +322,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
       <div className="space-y-3">
         <div>
           <div className="flex justify-between items-end mb-1">
-            <label className="label-text mb-0">Description</label>
+            <label className="label-text mb-0">详细描述</label>
             <div className="flex gap-1">
               <button title="加粗 (Ctrl+B)" onClick={(e) => { e.preventDefault(); handleFormat('description', '**', '**'); }} className="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded transition-colors border border-slate-200">B</button>
               <button title="斜体 (Ctrl+I)" onClick={(e) => { e.preventDefault(); handleFormat('description', '*', '*'); }} className="text-[10px] italic font-serif bg-slate-100 hover:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded transition-colors border border-slate-200">I</button>
@@ -320,7 +332,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
         </div>
         <div>
           <div className="flex justify-between items-end mb-1">
-            <label className="label-text mb-0">Notes</label>
+            <label className="label-text mb-0">注意事项</label>
             <div className="flex gap-1">
               <button title="加粗 (Ctrl+B)" onClick={(e) => { e.preventDefault(); handleFormat('notes', '**', '**'); }} className="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded transition-colors border border-slate-200">B</button>
               <button title="斜体 (Ctrl+I)" onClick={(e) => { e.preventDefault(); handleFormat('notes', '*', '*'); }} className="text-[10px] italic font-serif bg-slate-100 hover:bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded transition-colors border border-slate-200">I</button>
@@ -331,7 +343,7 @@ export const SessionForm: React.FC<SessionFormProps> = ({ data, onChange, onSave
       </div>
 
       <div>
-        <label className="label-text mb-2">Tags</label>
+        <label className="label-text mb-2">标签</label>
         <div className="flex flex-wrap gap-2 mb-2 min-h-[24px]">
           {data.tags.map(tag => (
             <span key={tag} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">

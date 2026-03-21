@@ -205,17 +205,22 @@ export const UniversityScheduleGrid: React.FC<UniversityScheduleGridProps> = ({ 
 
             <div className="overflow-x-auto pb-4">
                 <div ref={scheduleRef} className="bg-white min-w-[1200px] shadow-xl rounded-2xl border border-slate-200 overflow-hidden">
-                    <div className="bg-emerald-900 text-white px-8 py-8 flex justify-between items-center">
-                        <div>
-                            <h2 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                                <span className="p-2 bg-white text-emerald-900 rounded-lg"><Calendar size={24} /></span>
-                                成都高校面团公共约团页面
-                            </h2>
-                            <p className="text-emerald-400 text-sm font-bold mt-2 tracking-widest uppercase">Chengdu University TRPG Community Schedule</p>
+                    <div className="bg-emerald-900 text-white px-8 py-8 flex flex-col gap-5">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h2 className="text-3xl font-black tracking-tight flex items-center gap-3">
+                                    <span className="p-2 bg-white text-emerald-900 rounded-lg"><Calendar size={24} /></span>
+                                    成都高校面团公共约团页面
+                                </h2>
+                                <p className="text-emerald-400 text-sm font-bold mt-2 tracking-widest uppercase">Chengdu University TRPG Community Schedule</p>
+                            </div>
+                            <div className="text-right mt-1">
+                                <div className="text-sm font-bold text-emerald-500 uppercase">Season 2024</div>
+                                <div className="text-2xl font-black font-mono">{format(startOfSelectedWeek, 'yyyy')}</div>
+                            </div>
                         </div>
-                        <div className="text-right">
-                            <div className="text-sm font-bold text-emerald-500 uppercase">Season 2024</div>
-                            <div className="text-2xl font-black font-mono">{format(startOfSelectedWeek, 'yyyy')}</div>
+                        <div className="bg-emerald-950/50 p-3 rounded text-[10px] text-emerald-200/80 leading-relaxed border border-emerald-800/50">
+                            免责声明：本页面系成都秘密基地TRPG俱乐部为支持各大高校TRPG社群而无偿提供的公共信息发布平台。俱乐部不对本平台中由任何主持人、参与者及活动场地之间产生的任何经济纠纷或意外损失承担法律责任。请各位玩家自行甄别活动信息，注意人身及财产安全。
                         </div>
                     </div>
 
