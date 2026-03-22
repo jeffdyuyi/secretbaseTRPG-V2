@@ -303,56 +303,6 @@ function App() {
         setEditingId(null);
     };
 
-    // --- MOCK ENROLLMENT LOGIC ---
-    const handleEnrollSession = async (sessionId: string, action: 'enroll' | 'cancel') => {
-        if (!user) {
-            alert('请先登录！');
-            return;
-        }
-
-        const updateDataStore = (
-            dataStore: SessionData[],
-            setDataStore: React.Dispatch<React.SetStateAction<SessionData[]>>
-        ) => {
-            let found = false;
-            const newData = dataStore.map(s => {
-                if (s.id === sessionId) {
-                    found = true;
-                    const enrolledUsers = s.enrolledUsers || [];
-                    if (action === 'enroll') {
-                        if (enrolledUsers.some(u => u.userId === user.id)) return s; // Already enrolled
-                        if (s.currentPlayers >= s.maxPlayers) {
-                            alert('人数已满！');
-                            return s;
-                        }
-                        return {
-                            ...s,
-                            currentPlayers: s.currentPlayers + 1,
-                            enrolledUsers: [...enrolledUsers, { userId: user.id, username: user.username, contact: user.contact }]
-                        };
-                    } else {
-                        return {
-                            ...s,
-                            currentPlayers: Math.max(0, s.currentPlayers - 1),
-                            enrolledUsers: enrolledUsers.filter(u => u.userId !== user.id)
-                        };
-                    }
-                }
-                return s;
-            });
-            if (found) setDataStore(newData);
-            return found;
-        };
-
-        const foundInSessions = updateDataStore(sessions, setSessions);
-        if (!foundInSessions) {
-            updateDataStore(universitySessions, setUniversitySessions);
-        }
-
-        // Note: In a real system, we'd also sync this back to Vika/Backend here via an API call.
-        // For testing, local state update is sufficient.
-    };
-
     const handleExplodeSession = async (id: string) => {
         if (cloudConfig.enabled) {
             const target = [...sessions, ...satellites].find(s => s.id === id);
@@ -590,11 +540,9 @@ function App() {
                             <button onClick={() => setActiveTab('schedule')} className={`p-2 sm:px-3 sm:py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'schedule' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:text-slate-700'}`}>
                                 <CalendarIcon size={18} className="sm:mr-2 inline" /> <span className="hidden sm:inline">俱乐部日程</span>
                             </button>
-                            {userRole === 'student' && (
-                                <button onClick={() => setActiveTab('university')} className={`p-2 sm:px-3 sm:py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'university' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:text-slate-700'}`}>
-                                    <CalendarIcon size={18} className="sm:mr-2 inline" /> <span className="hidden sm:inline">高校约团</span>
-                                </button>
-                            )}
+                            <button onClick={() => setActiveTab('university')} className={`p-2 sm:px-3 sm:py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'university' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:text-slate-700'}`}>
+                                <CalendarIcon size={18} className="sm:mr-2 inline" /> <span className="hidden sm:inline">高校约团</span>
+                            </button>
                             <button onClick={() => setActiveTab('satellite')} className={`p-2 sm:px-3 sm:py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'satellite' ? 'bg-sky-50 text-sky-700' : 'text-slate-500 hover:text-slate-700'}`}>
                                 <Rocket size={18} className="sm:mr-2 inline" /> <span className="hidden sm:inline">卫星</span>
                             </button>
@@ -846,7 +794,6 @@ function App() {
                             onEdit={handleEditSession}
                             onImport={handleImportSchedule}
                             onCopyLastWeek={handleCopyFromLastWeek}
-                            onEnroll={handleEnrollSession}
                         />
                     </div>
                 )}
@@ -870,16 +817,18 @@ function App() {
                                 <button onClick={refreshCloudData} className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600" title="刷新数据">
                                     <RefreshCw size={18} className={isSyncing ? "animate-spin" : ""} />
                                 </button>
-                                <button onClick={() => { setActiveTab('generator'); setFormData({ ...INITIAL_UNIVERSITY_SESSION, date: formData.date }); }} className="flex items-center gap-1 text-sm bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full font-medium hover:bg-emerald-100 transition-colors">
-                                    <Plus size={14} /> 发布高校团
-                                </button>
+                                {userRole === 'student' && (
+                                    <button onClick={() => { setActiveTab('generator'); setFormData({ ...INITIAL_UNIVERSITY_SESSION, date: formData.date }); }} className="flex items-center gap-1 text-sm bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full font-medium hover:bg-emerald-100 transition-colors">
+                                        <Plus size={14} /> 发布高校团
+                                    </button>
+                                )}
                             </div>
                         </div>
                         <UniversityScheduleGrid
                             sessions={universitySessions}
+                            canEdit={userRole === 'student'}
                             onExplode={handleExplodeSession}
                             onEdit={handleEditSession}
-                            onEnroll={handleEnrollSession}
                             onImport={handleImportSchedule}
                         />
                     </div>

@@ -12,15 +12,13 @@ interface ScheduleGridProps {
     sessions: SessionData[];
     satellites: SessionData[];
     onExplode: (id: string) => void;
-    onEdit: (id: string) => void;
     onImport: (data: SessionData[]) => void;
     onCopyLastWeek: () => void;
-    onEnroll?: (sessionId: string, action: 'enroll' | 'cancel') => void;
 }
 
 type ViewMode = 'date-rows' | 'room-rows';
 
-export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites, onExplode, onEdit, onImport, onCopyLastWeek, onEnroll }) => {
+export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites, onExplode, onEdit, onImport, onCopyLastWeek }) => {
     const { user } = useAuth();
     const scheduleRef = useRef<HTMLDivElement>(null);
     const [copied, setCopied] = useState(false);
@@ -192,34 +190,6 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites
                     <span className="text-slate-400">{session.maxPlayers}</span>
                 </div>
             </div>
-
-            {/* Enrollment Action (Visible on hover or when recruiting) */}
-            {session.status === '招募中' && !session.isExploded && (
-                <div className="mt-2 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    {user ? (
-                        session.enrolledUsers?.some(u => u.userId === user.id) ? (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setEnrollingSession(session); }}
-                                className="w-full bg-red-50 text-red-600 border border-red-200 py-1 rounded-md text-[10px] font-bold hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
-                            >
-                                <LogOut size={12} /> 已报名 (点击取消)
-                            </button>
-                        ) : (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setEnrollingSession(session); }}
-                                disabled={session.currentPlayers >= session.maxPlayers}
-                                className="w-full bg-indigo-50 text-indigo-700 border border-indigo-200 py-1 rounded-md text-[10px] font-bold hover:bg-indigo-100 transition-colors flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <UserPlus size={12} /> {session.currentPlayers >= session.maxPlayers ? '已满员' : '我要报名'}
-                            </button>
-                        )
-                    ) : (
-                        <div className="w-full bg-slate-50 text-slate-500 border border-slate-200 py-1 rounded-md text-[10px] font-bold">
-                            请先登录以报名
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 
@@ -387,22 +357,6 @@ export const ScheduleGrid: React.FC<ScheduleGridProps> = ({ sessions, satellites
                     </div>
                 </div>
             </div>
-
-            {/* Enrollment Modal */}
-            {enrollingSession && user && onEnroll && (
-                <EnrollmentModal
-                    session={enrollingSession}
-                    user={user}
-                    isEnrolled={!!enrollingSession.enrolledUsers?.some(u => u.userId === user.id)}
-                    onConfirm={() => {
-                        const isEnrolled = !!enrollingSession.enrolledUsers?.some(u => u.userId === user.id);
-                        onEnroll(enrollingSession.id, isEnrolled ? 'cancel' : 'enroll');
-                        setEnrollingSession(null);
-                        setSelectedId(null);
-                    }}
-                    onCancel={() => setEnrollingSession(null)}
-                />
-            )}
         </div>
     );
 };
